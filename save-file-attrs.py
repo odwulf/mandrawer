@@ -9,6 +9,9 @@ import argparse
 import json
 import os
 import sys
+import re
+
+files_exclusions = r"^((.*/)?@eaDir(/.*)?|.*\.jpg)$"
 
 def collect_file_attrs(path):
     dirs = os.walk(path)
@@ -18,14 +21,16 @@ def collect_file_attrs(path):
         for file in files:
             path = os.path.join(dirpath, file)
             file_info = os.lstat(path)
-            file_attrs[path] = {
-                'mode' : file_info.st_mode,
-                'ctime' : file_info.st_ctime,
-                'mtime' : file_info.st_mtime,
-                'atime' : file_info.st_atime,
-                'uid' : file_info.st_uid,
-                'gid' : file_info.st_gid
-            }
+            if not re.match(files_exclusions,path):
+                file_info = os.lstat(path)
+                file_attrs[path] = {
+                    'mode' : file_info.st_mode,
+                    'ctime' : file_info.st_ctime,
+                    'mtime' : file_info.st_mtime,
+                    'atime' : file_info.st_atime,
+                    'uid' : file_info.st_uid,
+                    'gid' : file_info.st_gid
+                }
     return file_attrs
 
 def apply_file_attrs(attrs):
